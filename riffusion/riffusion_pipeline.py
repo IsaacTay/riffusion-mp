@@ -205,6 +205,13 @@ class RiffusionPipeline(DiffusionPipeline):
             skip_weighting=False,
         )[0]
 
+    def embed_prompt_weighted(self, prompt) -> torch.FloatTensor:
+        if not isinstance(prompt, str):
+            total_weight = sum(p.weight for p in prompt)
+            return sum(self.embed_text_weighted(p.text) * p.weight/total_weight for p in prompt)
+        return self.embed_text_weighted(prompt)
+
+
     @torch.no_grad()
     def riffuse(
         self,
@@ -240,11 +247,11 @@ class RiffusionPipeline(DiffusionPipeline):
 
         # Text encodings
         if use_reweighting:
-            embed_start = self.embed_text_weighted(start.prompt)
-            embed_end = self.embed_text_weighted(end.prompt)
+            embed_start = self.embed_prompt_weighted(start.prompt)
+            embed_end = self.embed_prompt_weighted(end.prompt)
         else:
-            embed_start = self.embed_text(start.prompt)
-            embed_end = self.embed_text(end.prompt)
+            embed_start = self.embed_prompt_weighted(start.prompt)
+            embed_end = self.embed_prompt_weighted(end.prompt)
 
         text_embedding = embed_start + alpha * (embed_end - embed_start)
 

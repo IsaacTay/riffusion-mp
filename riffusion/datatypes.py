@@ -14,7 +14,7 @@ class PromptInput:
     """
 
     # Text prompt fed into a CLIP model
-    prompt: str
+    prompt: T.Union[str, T.List[WeightedPrompt]]
 
     # Random seed for denoising
     seed: int
@@ -28,6 +28,10 @@ class PromptInput:
     # Classifier-free guidance strength
     guidance: float = 7.0
 
+@dataclass(frozen=True)
+class WeightedPrompt:
+    text: str
+    weight: float
 
 @dataclass(frozen=True)
 class InferenceInput:
@@ -55,6 +59,8 @@ class InferenceInput:
 
     # ID of mask image to use
     mask_image_id: T.Optional[str] = None
+
+    return_image: bool = True
 
 
 @dataclass(frozen=True)
